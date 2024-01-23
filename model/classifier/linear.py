@@ -13,6 +13,7 @@ class LinearClassifier(nn.Module):
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(0.1)
         self.fc2 = nn.Linear(1024, 17)
+        self.relu2 = nn.ReLU()
         self.softmax = nn.LogSoftmax(1)
 
     def forward(self, x: torch.Tensor):
@@ -20,5 +21,6 @@ class LinearClassifier(nn.Module):
         out = self.relu1(out)
         out = self.dropout1(out)
         out = self.fc2(out)
+        out = self.relu2(out)
         out = self.softmax(out)
         return out

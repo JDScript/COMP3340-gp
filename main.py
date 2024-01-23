@@ -44,7 +44,6 @@ def train(
             epoch_losses += loss.item()
             epoch_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
             epoch_total += X.shape[0]
-        scheduler.step()
 
         eval_losses = 0.0
         eval_corrects = 0
@@ -62,8 +61,9 @@ def train(
                 eval_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
                 eval_total += X.shape[0]
 
+        scheduler.step()
         print(
-            f"loss: {epoch_losses/epoch_total}, acc: {epoch_corrects/epoch_total}, eval_loss: {eval_losses/eval_total}, eval_acc: {eval_corrects/eval_total}"
+            f"loss: {epoch_losses/epoch_total}, acc: {epoch_corrects/epoch_total}, eval_loss: {eval_losses/eval_total}, eval_acc: {eval_corrects/eval_total}\n"
         )
 
     # Save Model
