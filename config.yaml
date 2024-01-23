@@ -1,0 +1,49 @@
+device: mps # may change to cpu, cuda
+model:
+  backbone:
+    target: model.backbone.ResNet18 # AlexNet, ResNet18, ResNet50, ResNet152, VGG19, ViT_B_16
+    params:
+      weights: IMAGENET1K_V1
+      frozen: True # Freeze the backbone parameters
+  classifier:
+    target: model.classifier.LinearClassifier
+    params:
+      # AlexNet: 256 * 6 * 6 = 9216
+      # ResNet18: 512
+      # ResNet50, ResNet152: 2048
+      # VGG19: 512 * 7 * 7 = 25088
+      # ViT_B_16: 768
+      in_features: 512
+trainer:
+  epochs: 25
+  optimizer:
+    target: torch.optim.SGD
+    params:
+      lr: 0.001
+      momentum: 0.9
+  scheduler:
+    target: torch.optim.lr_scheduler.ExponentialLR
+    params:
+      gamma: 0.9
+dataset:
+  path: ./data
+  split_id: "1"
+  batch_size: 8
+  shuffle: True
+  augmentations: # only applies to training set
+    # - target: torchvision.transforms.RandomRotation
+    #   params:
+    #     degrees: 30
+    - target: torchvision.transforms.RandomHorizontalFlip
+    - target: torchvision.transforms.RandomResizedCrop
+      params:
+        size: 224
+  transforms: # applies to all sets after augmentations
+    - target: torchvision.transforms.CenterCrop
+      params:
+        size: 224
+    - target: torchvision.transforms.ToTensor
+    - target: torchvision.transforms.Normalize
+      params:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
