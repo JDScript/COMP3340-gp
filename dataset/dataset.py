@@ -20,7 +20,7 @@ def instentiate_dataloader(cfg: Config):
     )
 
     train_dataset = Flowers17(
-        cfg.dataset.path, split="train", transform=Compose([augmentations, transforms])
+        cfg.dataset.path, split="train", download=True, transform=Compose([augmentations, transforms])
     )
     val_dataset = Flowers17(cfg.dataset.path, split="val", transform=transforms)
     test_dataset = Flowers17(cfg.dataset.path, split="test", transform=transforms)
