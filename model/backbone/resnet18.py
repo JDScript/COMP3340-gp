@@ -6,7 +6,7 @@ from torchvision.models import resnet18, ResNet18_Weights
 class ResNet18(nn.Module):
     def __init__(
         self,
-        weights: ResNet18_Weights | str = ResNet18_Weights.IMAGENET1K_V1,
+        weights: ResNet18_Weights | str | None = None,
         frozen: bool = True,
         **kwargs,
     ) -> None:

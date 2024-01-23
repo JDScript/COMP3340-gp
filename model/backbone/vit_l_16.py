@@ -1,19 +1,19 @@
 import torch
 import torch.nn as nn
-from torchvision.models import vit_b_16, ViT_B_16_Weights
+from torchvision.models import vit_l_16, ViT_L_16_Weights
 
 
-class ViT_B_16(nn.Module):
+class ViT_L_16(nn.Module):
     def __init__(
         self,
-        weights: ViT_B_16_Weights | str | None = None,
+        weights: ViT_L_16_Weights | str | None = None,
         frozen: bool = True,
         **kwargs,
     ) -> None:
         super().__init__()
         if isinstance(weights, str):
-            weights = ViT_B_16_Weights[weights]
-        self.vit = vit_b_16(weights=weights)
+            weights = ViT_L_16_Weights[weights]
+        self.vit = vit_l_16(weights=weights)
         self.vit.heads = nn.Sequential()
 
         if frozen:

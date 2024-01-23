@@ -6,7 +6,7 @@ from torchvision.models import vgg19, VGG19_Weights
 class VGG19(nn.Module):
     def __init__(
         self,
-        weights: VGG19_Weights | str = VGG19_Weights.IMAGENET1K_V1,
+        weights: VGG19_Weights | str | None = None,
         frozen: bool = True,
         **kwargs,
     ) -> None:

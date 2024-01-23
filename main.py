@@ -78,6 +78,31 @@ def train(
     )
 
 
+def test(
+    model: nn.Module,
+    criterion: nn.Module,
+    cfg: Config,
+    test_loader: DataLoader,
+):
+    model.eval()
+
+    test_losses = 0.0
+    test_corrects = 0
+    test_total = 0
+    with torch.no_grad():
+        for X, y in tqdm(test_loader, "Testing"):
+            X = X.to(cfg.device)
+            y = y.to(cfg.device)
+            y_pred = model(X)
+            loss = criterion(y_pred, y)
+
+            test_losses += loss.item()
+            test_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
+            test_total += X.shape[0]
+
+    print(f"loss: {test_losses/test_total}, acc: {test_corrects/test_total}")
+
+
 if __name__ == "__main__":
     conf = load_config()
     train_loader, val_loader, test_loader = instentiate_dataloader(conf)
@@ -90,4 +115,11 @@ if __name__ == "__main__":
         conf,
         train_loader,
         val_loader,
+    )
+
+    test(
+        model,
+        criterion,
+        conf,
+        test_loader,
     )

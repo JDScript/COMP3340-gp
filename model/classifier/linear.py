@@ -9,10 +9,10 @@ class LinearClassifier(nn.Module):
         **kwargs,
     ) -> None:
         super().__init__()
-        self.fc1 = nn.Linear(in_features, out_features=256)
+        self.fc1 = nn.Linear(in_features, out_features=1024)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(0.1)
-        self.fc2 = nn.Linear(256, 17)
+        self.fc2 = nn.Linear(1024, 17)
         self.softmax = nn.LogSoftmax(1)
 
     def forward(self, x: torch.Tensor):

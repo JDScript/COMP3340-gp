@@ -38,6 +38,7 @@ class Config(DictConfig):
     model: _ModelConfig
     trainer: _TrainerConfig
     dataset: _DatasetConfig
+    ckpt: Optional[str] = None
 
 
 def load_config(

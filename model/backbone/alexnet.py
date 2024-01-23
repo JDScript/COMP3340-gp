@@ -6,7 +6,7 @@ from torchvision.models import alexnet, AlexNet_Weights
 class AlexNet(nn.Module):
     def __init__(
         self,
-        weights: AlexNet_Weights | str = AlexNet_Weights.IMAGENET1K_V1,
+        weights: AlexNet_Weights | str | None = None,
         frozen: bool = True,
         **kwargs,
     ) -> None:

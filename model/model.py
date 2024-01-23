@@ -5,11 +5,7 @@ from utils import retrieve_class_from_string
 
 
 class Model(nn.Module):
-    def __init__(
-        self,
-        backbone: nn.Module,
-        classifier: nn.Module,
-    ) -> None:
+    def __init__(self, backbone: nn.Module, classifier: nn.Module) -> None:
         super().__init__()
         self.backbone = backbone
         self.classifier = classifier
@@ -21,6 +17,10 @@ class Model(nn.Module):
 
 
 def instantiate_model(config: Config):
+    if config.ckpt is not None:
+        model = torch.load(config.ckpt)
+        return model
+
     backbone = retrieve_class_from_string(config.model.backbone.target)(
         **config.model.backbone.params
     )
