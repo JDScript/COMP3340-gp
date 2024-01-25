@@ -2,10 +2,19 @@ device: mps # may change to cpu, cuda
 # ckpt: ./ckpt/backbone_ResNet152_epoch_25_1706017655.pt
 model:
   backbone:
-    target: model.backbone.ResNet50 # AlexNet, ResNet18, ResNet50, ResNet152, VGG19, ViT_B_16, ViT_L_16
+    target: model.backbone.NaiveConv # AlexNet, ResNet18, ResNet50, ResNet152, VGG19, ViT_B_16, ViT_L_16
     params:
-      # weights: IMAGENET1K_V2 # Can remove this to only use architecture, no pretraining
+      weights: IMAGENET1K_V1 # Can remove this to only use architecture, no pretraining
       frozen: False # Freeze the backbone parameters
+      layers_configurations: [
+        64,
+        64,
+        "M",
+        32,
+        32,
+        "M",
+      ]
+      kernel_size: 2
   classifier:
     target: model.classifier.LinearClassifier
     params:
@@ -15,9 +24,10 @@ model:
       # VGG19: 512 * 7 * 7 = 25088
       # ViT_B_16: 768
       # ViT_L_16: 1024
-      in_features: 2048
+      # NaiveConv: X * 7 * 7
+      in_features: 1568
 trainer:
-  epochs: 200
+  epochs: 500
   optimizer:
     target: torch.optim.SGD
     params:
@@ -25,10 +35,11 @@ trainer:
       momentum: 0.9
       weight_decay: 1e-4
   scheduler:
-    target: torch.optim.lr_scheduler.StepLR
+    target: torch.optim.lr_scheduler.MultiStepLR
     params:
       gamma: 0.1
-      step_size: 20
+      # step_size: 50
+      milestones: [100, 150, 200, 300, 400]
       verbose: True
 dataset:
   path: ./data

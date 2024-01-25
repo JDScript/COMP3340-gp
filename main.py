@@ -1,3 +1,4 @@
+from omegaconf import OmegaConf
 import torch
 import torch.nn as nn
 from time import time
@@ -70,8 +71,11 @@ def train(
     ts = str(int(time()))
     torch.save(
         model,
-        "./ckpt/backbone_{}_epoch_{}_{}.pt".format(
+        "./ckpt/backbone_{}_{}_epoch_{}_{}.pt".format(
             conf.model.backbone.target.split(".")[-1],
+            "freezed"
+            if conf.model.backbone.params.get("frozen", True)
+            else "finetuned",
             conf.trainer.epochs,
             ts,
         ),
@@ -105,6 +109,9 @@ def test(
 
 if __name__ == "__main__":
     conf = load_config()
+
+    print(OmegaConf.to_yaml(conf))
+
     train_loader, val_loader, test_loader = instentiate_dataloader(conf)
     model = instantiate_model(conf).to(conf.device)
     criterion = nn.CrossEntropyLoss()
