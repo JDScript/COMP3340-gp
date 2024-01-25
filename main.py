@@ -1,6 +1,7 @@
 from omegaconf import OmegaConf
 import torch
 import torch.nn as nn
+import os
 from time import time
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -42,7 +43,7 @@ def train(
             loss.backward()
             optimizer.step()
 
-            epoch_losses += loss.item()
+            epoch_losses += loss.item() * y_pred.shape[0]
             epoch_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
             epoch_total += X.shape[0]
 
@@ -58,7 +59,7 @@ def train(
                 y_pred = model(X)
                 loss = criterion(y_pred, y)
 
-                eval_losses += loss.item()
+                eval_losses += loss.item() * y_pred.shape[0]
                 eval_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
                 eval_total += X.shape[0]
 
@@ -66,20 +67,6 @@ def train(
         print(
             f"loss: {epoch_losses/epoch_total}, acc: {epoch_corrects/epoch_total}, eval_loss: {eval_losses/eval_total}, eval_acc: {eval_corrects/eval_total}\n"
         )
-
-    # Save Model
-    ts = str(int(time()))
-    torch.save(
-        model,
-        "./ckpt/backbone_{}_{}_epoch_{}_{}.pt".format(
-            conf.model.backbone.target.split(".")[-1],
-            "freezed"
-            if conf.model.backbone.params.get("frozen", True)
-            else "finetuned",
-            conf.trainer.epochs,
-            ts,
-        ),
-    )
 
 
 def test(
@@ -100,7 +87,7 @@ def test(
             y_pred = model(X)
             loss = criterion(y_pred, y)
 
-            test_losses += loss.item()
+            test_losses += loss.item() * y_pred.shape[0]
             test_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
             test_total += X.shape[0]
 
@@ -116,6 +103,14 @@ if __name__ == "__main__":
     model = instantiate_model(conf).to(conf.device)
     criterion = nn.CrossEntropyLoss()
 
+    if conf.device.startswith("cuda") and torch.cuda.device_count() > 1:
+        print("Using {} GPUs".format(torch.cuda.device_count()))
+        model = nn.DataParallel(model)
+
+    ckpt_loc = "./ckpt/run_{}".format(int(time()))
+    os.mkdir(ckpt_loc)
+    open(ckpt_loc + "/config.yaml", "w").write(OmegaConf.to_yaml(conf))
+
     train(
         model,
         criterion,
@@ -123,6 +118,8 @@ if __name__ == "__main__":
         train_loader,
         val_loader,
     )
+
+    torch.save(model, ckpt_loc + "/checkpoint.ckpt")
 
     test(
         model,

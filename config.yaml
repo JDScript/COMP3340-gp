@@ -2,19 +2,19 @@ device: mps # may change to cpu, cuda
 # ckpt: ./ckpt/backbone_ResNet152_epoch_25_1706017655.pt
 model:
   backbone:
-    target: model.backbone.NaiveConv # AlexNet, ResNet18, ResNet50, ResNet152, VGG19, ViT_B_16, ViT_L_16
+    target: model.backbone.ResNet18 # AlexNet, ResNet18, ResNet50, ResNet152, VGG19, ViT_B_16, ViT_L_16
     params:
       weights: IMAGENET1K_V1 # Can remove this to only use architecture, no pretraining
       frozen: False # Freeze the backbone parameters
-      layers_configurations: [
-        64,
-        64,
-        "M",
-        32,
-        32,
-        "M",
-      ]
-      kernel_size: 2
+      # layers_configurations: [
+      #   64,
+      #   64,
+      #   "M",
+      #   32,
+      #   32,
+      #   "M",
+      # ]
+      # kernel_size: 2
   classifier:
     target: model.classifier.LinearClassifier
     params:
@@ -25,9 +25,10 @@ model:
       # ViT_B_16: 768
       # ViT_L_16: 1024
       # NaiveConv: X * 7 * 7
-      in_features: 1568
+      in_features: 512
+      out_features: 17
 trainer:
-  epochs: 500
+  epochs: 200
   optimizer:
     target: torch.optim.SGD
     params:
@@ -37,16 +38,15 @@ trainer:
   scheduler:
     target: torch.optim.lr_scheduler.MultiStepLR
     params:
-      gamma: 0.1
+      gamma: 0.001
       # step_size: 50
-      milestones: [100, 150, 200, 300, 400]
-      verbose: True
+      milestones: [100, 150]
 dataset:
   path: ./data
   split_id: "1"
   batch_size: 8
   shuffle: True
-  augmentations: # only applies to training set
+  train_transforms:
     # - target: torchvision.transforms.RandomRotation
     #   params:
     #     degrees: 30
@@ -54,7 +54,15 @@ dataset:
     - target: torchvision.transforms.RandomResizedCrop
       params:
         size: 224
-  transforms: # applies to all sets after augmentations
+    - target: torchvision.transforms.ToTensor
+    - target: torchvision.transforms.Normalize
+      params:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+  test_transforms:
+    - target: torchvision.transforms.Resize
+      params:
+        size: 256
     - target: torchvision.transforms.CenterCrop
       params:
         size: 224

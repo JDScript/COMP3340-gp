@@ -15,8 +15,8 @@ class _DatasetConfig:
     split_id: str = MISSING
     batch_size: int = MISSING
     shuffle: bool = MISSING
-    augmentations: list[_ClassObjectConfig] = field(default_factory=list)
-    transforms: list[_ClassObjectConfig] = field(default_factory=list)
+    train_transforms: list[_ClassObjectConfig] = field(default_factory=list)
+    test_transforms: list[_ClassObjectConfig] = field(default_factory=list)
 
 
 @dataclass

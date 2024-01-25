@@ -1,4 +1,4 @@
 /data
-/ckpt/**/*.pt
+/ckpt/**/*
 __pycache__
 *.out
