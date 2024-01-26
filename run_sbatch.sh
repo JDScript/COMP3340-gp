@@ -6,4 +6,4 @@ conda activate comp3340gp
 cd ~/COMP3340-gp
 
 python main.py device=cuda
-# python main.py device=cuda model.backbone.target=model.backbone.ResNet50 model.classifier.params.in_features=2048
+# python main.py device=cuda model.backbone.target=model.backbone.Swin_V2_T model.classifier.params.in_features=1000

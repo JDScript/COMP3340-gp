@@ -1,4 +1,5 @@
 from .alexnet import AlexNet
+from .groupmixformer import GroupMixFormer
 from .naiveconv import NaiveConv
 from .resnet18 import ResNet18
 from .resnet50 import ResNet50
@@ -10,6 +11,7 @@ from .vit_l_16 import ViT_L_16
 
 __all__ = [
     "AlexNet",
+    "GroupMixFormer",
     "NaiveConv",
     "ResNet18",
     "ResNet50",

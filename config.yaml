@@ -1,8 +1,9 @@
 device: mps # may change to cpu, cuda
 # ckpt: ./ckpt/backbone_ResNet152_epoch_25_1706017655.pt
+tensorboard: True
 model:
   backbone:
-    target: model.backbone.ResNet18 # AlexNet, ResNet18, ResNet50, ResNet152, VGG19, ViT_B_16, ViT_L_16
+    target: model.backbone.GroupMixFormer # AlexNet, GroupMixFormer, ResNet18, ResNet50, ResNet152, VGG19, ViT_B_16, ViT_L_16
     params:
       weights: IMAGENET1K_V1 # Can remove this to only use architecture, no pretraining
       frozen: False # Freeze the backbone parameters
@@ -15,6 +16,11 @@ model:
       #   "M",
       # ]
       # kernel_size: 2
+      embedding_dims: [80, 160, 200, 240]
+      serial_depths: [4, 4, 12, 4]
+      mlp_ratios: [4, 4, 4, 4]
+      drop_path_rate: 0.1
+      pretrain: ./pretrain/groupmixformer_tiny.pth
   classifier:
     target: model.classifier.LinearClassifier
     params:
@@ -25,7 +31,7 @@ model:
       # ViT_B_16: 768
       # ViT_L_16: 1024
       # NaiveConv: X * 7 * 7
-      in_features: 512
+      in_features: 1000
       out_features: 17
 trainer:
   epochs: 200

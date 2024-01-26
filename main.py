@@ -2,6 +2,7 @@ from omegaconf import OmegaConf
 import torch
 import torch.nn as nn
 import os
+import torch.utils.tensorboard as tb
 from time import time
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -17,6 +18,7 @@ def train(
     cfg: Config,
     train_loader: DataLoader,
     val_loader: DataLoader,
+    writer: tb.writer.SummaryWriter | None,
 ):
     optimizer: torch.optim.Optimizer = retrieve_class_from_string(
         cfg.trainer.optimizer.target
@@ -63,6 +65,12 @@ def train(
                 eval_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
                 eval_total += X.shape[0]
 
+        if writer is not None:
+            writer.add_scalar("Loss/train", epoch_losses / epoch_total, epoch)
+            writer.add_scalar("Accuracy/train", epoch_corrects / epoch_total, epoch)
+            writer.add_scalar("Loss/eval", eval_losses / eval_total, epoch)
+            writer.add_scalar("Accuracy/eval", eval_corrects / eval_total, epoch)
+
         scheduler.step()
         print(
             f"loss: {epoch_losses/epoch_total}, acc: {epoch_corrects/epoch_total}, eval_loss: {eval_losses/eval_total}, eval_acc: {eval_corrects/eval_total}\n"
@@ -74,6 +82,7 @@ def test(
     criterion: nn.Module,
     cfg: Config,
     test_loader: DataLoader,
+    writer: tb.writer.SummaryWriter | None,
 ):
     model.eval()
 
@@ -90,6 +99,10 @@ def test(
             test_losses += loss.item() * y_pred.shape[0]
             test_corrects += torch.sum(torch.argmax(y_pred, dim=1) == y)
             test_total += X.shape[0]
+
+    if writer is not None:
+        writer.add_scalar("Loss/test", test_losses / test_total, 0)
+        writer.add_scalar("Accuracy/test", test_corrects / test_total, 0)
 
     print(f"loss: {test_losses/test_total}, acc: {test_corrects/test_total}")
 
@@ -111,12 +124,22 @@ if __name__ == "__main__":
     os.mkdir(ckpt_loc)
     open(ckpt_loc + "/config.yaml", "w").write(OmegaConf.to_yaml(conf))
 
+    writer = None
+    if conf.tensorboard:
+        writer = tb.writer.SummaryWriter(ckpt_loc)
+        from tensorboard import program
+
+        t = program.TensorBoard()
+        t.configure(argv=[None, "--logdir", ckpt_loc, "--host", "0.0.0.0"])
+        t.launch()
+
     train(
         model,
         criterion,
         conf,
         train_loader,
         val_loader,
+        writer,
     )
 
     torch.save(model, ckpt_loc + "/checkpoint.ckpt")
@@ -126,4 +149,5 @@ if __name__ == "__main__":
         criterion,
         conf,
         test_loader,
+        writer,
     )

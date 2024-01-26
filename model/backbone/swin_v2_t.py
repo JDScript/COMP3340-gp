@@ -14,7 +14,7 @@ class Swin_V2_T(nn.Module):
         if isinstance(weights, str):
             weights = Swin_V2_T_Weights[weights]
         # Load and freeze Swin
-        self.swin = swin_v2_t(weights=weights).features
+        self.swin = swin_v2_t(weights=weights)
         if frozen:
             for parameter in self.swin.parameters():
                 parameter.requires_grad = False

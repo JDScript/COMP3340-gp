@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from xmlrpc.client import boolean
 from omegaconf import OmegaConf, DictConfig, MISSING
 from typing import cast, Optional
 
@@ -32,13 +33,14 @@ class _TrainerConfig:
     scheduler: _ClassObjectConfig
 
 
-@dataclass(frozen=True)
+@dataclass
 class Config(DictConfig):
     device: str
     model: _ModelConfig
     trainer: _TrainerConfig
     dataset: _DatasetConfig
     ckpt: Optional[str] = None
+    tensorboard: boolean = False
 
 
 def load_config(
