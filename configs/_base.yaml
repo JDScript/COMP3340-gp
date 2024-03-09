@@ -1,0 +1,66 @@
+model:
+  backbone:
+    target: models.backbones.resnet18.ResNet18
+    params:
+      pretrained: True
+  neck:
+    target: models.necks.resnet.ResNetNeck
+  head:
+    target: models.heads.linear.LinearClsHead
+    params:
+      in_features: 512
+      out_features: 17
+dataset:
+  target: datasets.Flowers17
+  params:
+    root: ./data
+  shuffle: True
+  batch_size: 8
+  train_transforms:
+    - target: torchvision.transforms.RandomHorizontalFlip
+    - target: torchvision.transforms.RandomResizedCrop
+      params:
+        size: 224
+    - target: torchvision.transforms.ToTensor
+    - target: torchvision.transforms.Normalize
+      params:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+  val_transforms:
+    - target: torchvision.transforms.Resize
+      params:
+        size: 256
+    - target: torchvision.transforms.CenterCrop
+      params:
+        size: 224
+    - target: torchvision.transforms.ToTensor
+    - target: torchvision.transforms.Normalize
+      params:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+  test_transforms:
+    - target: torchvision.transforms.Resize
+      params:
+        size: 256
+    - target: torchvision.transforms.CenterCrop
+      params:
+        size: 224
+    - target: torchvision.transforms.ToTensor
+    - target: torchvision.transforms.Normalize
+      params:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+trainer:
+  epochs: 200
+  optimizer:
+    target: torch.optim.SGD
+    params:
+      lr: 0.001
+      momentum: 0.9
+      weight_decay: 1e-4
+  scheduler:
+    target: torch.optim.lr_scheduler.MultiStepLR
+    params:
+      gamma: 0.001
+      # step_size: 50
+      milestones: [100, 150]

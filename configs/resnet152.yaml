@@ -1,0 +1,12 @@
+model:
+  backbone:
+    target: models.backbones.resnet152.ResNet152
+    params:
+      pretrained: True
+  neck:
+    target: models.necks.resnet.ResNetNeck
+  head:
+    target: models.heads.linear.LinearClsHead
+    params:
+      in_features: 2048
+      out_features: 17
