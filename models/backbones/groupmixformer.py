@@ -439,7 +439,7 @@ class GroupMixFormer(nn.Module):
         norm_layer=partial(nn.LayerNorm, eps=1e-6),
         return_interm_layers=True, # Modify this to True to only return backbone features
         out_features=None,  # seem useless
-        pretrain: str | None = None,  # seem useless
+        weights: str | None = None,  # seem useless
         **kwargs,
     ):
         super().__init__()
@@ -485,13 +485,13 @@ class GroupMixFormer(nn.Module):
         )
 
         # Classification head(s).
-        if not self.return_interm_layers:
-            self.norm4 = nn.SyncBatchNorm(embedding_dims[3])
-            self.head = nn.Linear(embedding_dims[3], num_classes)
+        # if not self.return_interm_layers:
+        self.norm4 = nn.SyncBatchNorm(embedding_dims[3])
+        self.head = nn.Linear(embedding_dims[3], num_classes)
 
         self.apply(self._init_weights)
-        if pretrain is not None:
-            checkpoint = torch.load(pretrain, map_location="cpu")
+        if weights is not None:
+            checkpoint = torch.load(weights, map_location="cpu")
             state_dict = checkpoint["model"]
             # check classifier, if not match, then re-init classifier to zero
             head_bias_pretrained = state_dict["head.bias"]

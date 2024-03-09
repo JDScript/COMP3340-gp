@@ -1,0 +1,18 @@
+model:
+  backbone:
+    target: models.backbones.groupmixformer.GroupMixFormer
+    params:
+      weights: ./pretrain_weights/groupmixformer_tiny.pth
+      embedding_dims: [80, 160, 200, 240]
+      serial_depths: [4, 4, 12, 4]
+      mlp_ratios: [4, 4, 4, 4]
+      drop_path_rate: 0.1
+  neck:
+    target: models.necks.groupmixformer.GroupMixFormerNeck
+    params:
+      last_embedding_dim: 240
+  head:
+    target: models.heads.linear.LinearClsHead
+    params:
+      in_features: 240
+      out_features: 17

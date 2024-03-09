@@ -1,0 +1,12 @@
+model:
+  backbone:
+    target: models.backbones.mobilenet_v3_large.MobileNet_V3_Large
+    params:
+      pretrained: True
+  neck:
+    target: models.necks.resnet.ResNetNeck
+  head:
+    target: models.heads.linear.LinearClsHead
+    params:
+      in_features: 960
+      out_features: 17

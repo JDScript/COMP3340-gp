@@ -2,3 +2,5 @@
 __pycache__/
 /data
 /lightning_logs
+pretrain_weights/*
+!pretrain_weights/.gitkeep
