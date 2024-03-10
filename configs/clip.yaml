@@ -2,7 +2,28 @@ model:
   backbone:
     target: models.backbones.clip.CLIP
     params:
-      weights: "laion2b_s34b_b79k"
+      model_name: ViT-B-16
+      weights: openai
+      labels:
+        [
+          "Daffodil",
+          "Snowdrop",
+          "Lily Valley",
+          "Bluebell",
+          "Crocus",
+          "Iris",
+          "Tigerlily",
+          "Tulip",
+          "Fritillary",
+          "Sunflower",
+          "Daisy",
+          "Colts Foot",
+          "Dandelalion",
+          "Cowslip",
+          "Buttercup",
+          "Windflower",
+          "Pansy",
+        ]
   neck:
     target: models.necks.clip.CLIPNeck
   head:
