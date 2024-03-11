@@ -30,8 +30,13 @@ class Classifier(L.LightningModule):
             self.head,
         )
         self.criterion = nn.CrossEntropyLoss()
-        self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=17)
-        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=17)
+
+        num_classes = 17
+        if cfg.model.head.params is not None:
+            num_classes = cfg.model.head.params.get("out_features", 17)
+
+        self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
     def forward(self, x: torch.Tensor) -> Any:
         return self.model(x)
