@@ -1,0 +1,14 @@
+model:
+  backbone:
+    target: models.backbones.alexnet.AlexNet
+    params:
+      pretrained: True
+  neck:
+    target: models.necks.alexnet.AlexNetNeck
+  head:
+    target: models.heads.linear.MultiLinearClsHead
+    params:
+      in_features: 9216
+      out_features: 17
+      embedding_paths: [4096, 4096]
+      dropout: 0.5
