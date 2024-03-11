@@ -23,3 +23,4 @@ if __name__ == "__main__":
     train_loader, val_loader, test_loader = instentiate_dataloader(cfg)
     trainer = L.Trainer(max_epochs=cfg.trainer.epochs)
     trainer.fit(model, train_loader, val_loader)
+    trainer.test(model, test_loader)

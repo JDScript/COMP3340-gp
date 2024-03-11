@@ -22,10 +22,9 @@ cfg = load_config(args.config)
 
 
 if __name__ == "__main__":
-    model = Classifier(cfg=cfg)
-    model.load_from_checkpoint(args.checkpoint)
-    flops = FlopCountAnalysis(model, inputs=torch.zeros(1, 3, 224, 224))
-    print(flop_count_table(flops))
+    model = Classifier.load_from_checkpoint(args.checkpoint, map_location="cpu")
+    # flops = FlopCountAnalysis(model, inputs=torch.zeros(1, 3, 224, 224))
+    # print(flop_count_table(flops))
     _, _, test_loader = instentiate_dataloader(cfg)
-    trainer = L.Trainer(max_epochs=cfg.trainer.epochs)
+    trainer = L.Trainer(max_epochs=cfg.trainer.epochs, accelerator="cpu")
     trainer.test(model, test_loader)

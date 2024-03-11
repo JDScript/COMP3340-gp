@@ -37,6 +37,8 @@ class Classifier(L.LightningModule):
 
         self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
         self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.test_acc_5 = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes, top_k=5)
 
     def forward(self, x: torch.Tensor) -> Any:
         return self.model(x)
@@ -62,6 +64,16 @@ class Classifier(L.LightningModule):
         self.val_acc(y_pred, y)
 
         self.log_dict({"val_loss": loss, "val_acc": self.val_acc}, prog_bar=True)
+        return loss
+    
+    def test_step(self, batch):
+        X, y = batch
+        y_pred = self.model(X)
+        loss = self.criterion(y_pred, y)
+        self.test_acc(y_pred, y)
+        self.test_acc_5(y_pred, y)
+
+        self.log_dict({"test_loss": loss, "test_acc": self.test_acc, "test_acc_5": self.test_acc_5}, prog_bar=True)
         return loss
 
     def configure_optimizers(self):
