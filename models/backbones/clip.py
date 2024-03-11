@@ -16,8 +16,9 @@ class CLIP(nn.Module):
             model_name, pretrained=weights
         )
         self.clip = model
-        self.tokenizer = open_clip.get_tokenizer(model_name)
-        self.text_tokens = self.tokenizer(labels)
+        # self.tokenizer = open_clip.get_tokenizer(model_name)
+        # self.text_tokens = self.tokenizer(labels)
+        # open_clip.list_pretrained()
 
     def forward(self, x):
         # if self.text_tokens.device != x.device:

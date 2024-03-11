@@ -12,7 +12,16 @@ class Swin_V2_T(nn.Module):
         weights = None
         if pretrained:
             weights = Swin_V2_T_Weights.IMAGENET1K_V1
-        self.backbone = swin_v2_t(weights=weights).features
+        swin = swin_v2_t(weights=weights)
+        self.backbone = swin.features
+        self.neck = nn.Sequential(
+            swin.norm,
+            swin.permute,
+            swin.avgpool,
+            swin.flatten,
+        )
 
     def forward(self, x):
-        return self.backbone(x)
+        x = self.backbone(x)
+        x = self.neck(x)
+        return x

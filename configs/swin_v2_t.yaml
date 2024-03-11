@@ -1,0 +1,12 @@
+model:
+  backbone:
+    target: models.backbones.swin_v2_t.Swin_V2_T
+    params:
+      pretrained: False
+  neck:
+    target: models.necks.swin_v2.Swin_V2_Neck
+  head:
+    target: models.heads.linear.LinearClsHead
+    params:
+      in_features: 768
+      out_features: 17

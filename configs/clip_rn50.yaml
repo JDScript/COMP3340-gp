@@ -2,8 +2,8 @@ model:
   backbone:
     target: models.backbones.clip.CLIP
     params:
-      model_name: ViT-B-16
-      weights: openai
+      model_name: RN50-quickgelu
+      weights: yfcc15m
       labels:
         [
           "Daffodil",
@@ -27,9 +27,9 @@ model:
   neck:
     target: models.necks.clip.CLIPNeck
   head:
-    target: models.heads.linear.LinearClsHead
+    target: models.heads.linear.MultiLinearClsHead
     params:
-      in_features: 512
+      in_features: 1024
       out_features: 17
-      embedding_paths: [256, 256]
+      embedding_paths: [512, 512]
       dropout: 0.5
