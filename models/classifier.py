@@ -1,6 +1,6 @@
 from typing import Any
 from config import Config
-from utils.cls import retrieve_class_from_string
+from utils import retrieve_class_from_string
 import lightning as L
 import torch
 import torch.nn as nn
@@ -72,6 +72,9 @@ class Classifier(L.LightningModule):
         loss = self.criterion(y_pred, y)
         self.test_acc(y_pred, y)
         self.test_acc_5(y_pred, y)
+
+        print("haha", y.shape[0])
+        print(y_pred, y)
 
         self.log_dict({"test_loss": loss, "test_acc": self.test_acc, "test_acc_5": self.test_acc_5}, prog_bar=True)
         return loss

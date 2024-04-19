@@ -2,7 +2,7 @@ model:
   backbone:
     target: models.backbones.swin_v2_t.Swin_V2_T
     params:
-      pretrained: False
+      pretrained: True
   neck:
     target: models.necks.swin_v2.Swin_V2_Neck
   head:

@@ -1,5 +1,5 @@
 from config import Config
-from utils.cls import retrieve_class_from_string
+from utils import retrieve_class_from_string
 from torchvision.transforms import Compose, RandomResizedCrop
 from torch.utils.data.dataloader import DataLoader
 from os import cpu_count

@@ -16,4 +16,6 @@ class ViT_B_16(nn.Module):
         self.backbone.heads = nn.Sequential()
 
     def forward(self, x):
-        return self.backbone(x)
+        out, weights = self.backbone(x)
+
+        return out, weights
