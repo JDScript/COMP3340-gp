@@ -1,5 +1,5 @@
 import torch.nn as nn
-from torchvision.models import vit_b_16, ViT_B_16_Weights
+from .vit import vit_b_16, ViT_B_16_Weights
 
 
 class ViT_B_16(nn.Module):
@@ -15,7 +15,10 @@ class ViT_B_16(nn.Module):
         self.backbone = vit_b_16(weights=weights)
         self.backbone.heads = nn.Sequential()
 
-    def forward(self, x):
+    def forward(self, x, return_weights=False):
         out, weights = self.backbone(x)
 
-        return out, weights
+        if return_weights:
+            return out, weights
+
+        return out

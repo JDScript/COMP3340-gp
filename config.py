@@ -40,6 +40,7 @@ class Config(DictConfig):
     model: _ModelConfig
     dataset: _DatasetConfig
     trainer: _TrainerConfig
+    visualize_attention: Optional[bool] = False
 
 
 def load_config(

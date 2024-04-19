@@ -47,10 +47,12 @@ if __name__ == "__main__":
 
     x = transform(img)
 
-    out, att_mat = model.backbone(x.unsqueeze(0))
+    out, att_mat = model.backbone(x.unsqueeze(0), return_weights=True)
 
 
     att_mat = torch.stack(att_mat)
+    print(att_mat.size())
+
 
     att_mat = torch.mean(att_mat, dim=0)
 

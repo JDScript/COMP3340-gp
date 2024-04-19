@@ -74,6 +74,12 @@ class Flowers17(VisionDataset):
         for image_id in image_ids:
             self._labels.append(image_id_to_label[image_id])
             self._image_files.append(self._images_folder / f"image_{image_id:04d}.jpg")
+        
+        if split == 'val':
+            np.random.seed(42)
+            np.random.shuffle(self._image_files)
+            np.random.seed(42)
+            np.random.shuffle(self._labels)
 
     def __len__(self) -> int:
         return len(self._image_files)

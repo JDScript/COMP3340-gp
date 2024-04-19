@@ -10,3 +10,4 @@ model:
     params:
       in_features: 768
       out_features: 17
+visualize_attention: True

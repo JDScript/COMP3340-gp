@@ -1,11 +1,13 @@
 from typing import Any
 from config import Config
-from utils import retrieve_class_from_string
+from utils import retrieve_class_from_string, visualize_attention
+from torchvision.utils import make_grid
 import lightning as L
 import torch
 import torch.nn as nn
 import torchmetrics
-
+import matplotlib.pyplot as plt
+import tensorboard as tb
 
 class Classifier(L.LightningModule):
     def __init__(
@@ -35,10 +37,16 @@ class Classifier(L.LightningModule):
         if cfg.model.head.params is not None:
             num_classes = cfg.model.head.params.get("out_features", 17)
 
-        self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.train_acc = torchmetrics.Accuracy(
+            task="multiclass", num_classes=num_classes
+        )
         self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_acc_5 = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes, top_k=5)
+        self.test_acc = torchmetrics.Accuracy(
+            task="multiclass", num_classes=num_classes
+        )
+        self.test_acc_5 = torchmetrics.Accuracy(
+            task="multiclass", num_classes=num_classes, top_k=5
+        )
 
     def forward(self, x: torch.Tensor) -> Any:
         return self.model(x)
@@ -56,10 +64,30 @@ class Classifier(L.LightningModule):
             prog_bar=True,
         )
         return loss
-
-    def validation_step(self, batch):
+    
+    def validation_step(self, batch, batch_idx):
         X, y = batch
-        y_pred = self.model(X)
+
+        assert isinstance(X, torch.Tensor)
+
+        if self.cfg.visualize_attention and batch_idx == 0:
+            y_pred, attn_map = self.backbone(X, return_weights=True)
+            y_pred = self.neck(y_pred)
+            y_pred = self.head(y_pred)
+
+            # Visualize attention
+            # Normalize images first
+            X = (X - X.min()) / (X.max() - X.min())
+            masks = visualize_attention(attn_map, X.size(-1))  # [B, W, H]
+            masks_grid = make_grid(masks.unsqueeze(1), nrow=X.size(0), normalize=False)
+            imgs_grid = make_grid(X, nrow=X.size(0), normalize=False)
+            masked_imgs_grid = make_grid(X * masks[:, None, :, :], nrow=X.size(0), normalize=False)
+            full_grid = torch.cat([imgs_grid, masked_imgs_grid, masks_grid], dim=1)
+            self.logger.experiment.add_image('attention_mask', full_grid, self.current_epoch)  # type: ignore
+
+        else:
+            y_pred = self.model(X)
+
         loss = self.criterion(y_pred, y)
         self.val_acc(y_pred, y)
 
@@ -73,10 +101,14 @@ class Classifier(L.LightningModule):
         self.test_acc(y_pred, y)
         self.test_acc_5(y_pred, y)
 
-        print("haha", y.shape[0])
-        print(y_pred, y)
-
-        self.log_dict({"test_loss": loss, "test_acc": self.test_acc, "test_acc_5": self.test_acc_5}, prog_bar=True)
+        self.log_dict(
+            {
+                "test_loss": loss,
+                "test_acc": self.test_acc,
+                "test_acc_5": self.test_acc_5,
+            },
+            prog_bar=True,
+        )
         return loss
 
     def configure_optimizers(self):
