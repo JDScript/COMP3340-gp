@@ -59,13 +59,26 @@ def sample_from_dataloader(test_loader: torch.utils.data.DataLoader):
 def make_inference(
     model: Classifier,
     data: tuple[torch.Tensor, np.ndarray],
+    visualize_attn: bool = False,
 ):
     gr.Info("Inference using {}".format(device))
     model.eval()
     model.to(device)
     X, _ = data
     X = X.unsqueeze(0).to(device)
-    pred: torch.Tensor = model(X)
+    if visualize_attn:
+        pred, attn_map = model.backbone(X, return_weights=True)
+        pred = model.neck(pred)
+        pred = model.head(pred)
+
+        # Visualize attention
+        X = (X - X.min()) / (X.max() - X.min())
+        masks = visualize_attention(attn_map, X.size(-1))  # [B, W, H]
+        masked_imgs_grid = make_grid(X * masks[:, None, :, :], nrow=X.size(0), normalize=False)
+        masked_img = TF.to_pil_image(masked_imgs_grid)
+    else:
+        pred: torch.Tensor = model(X)
+        masked_img = None
 
     # Log Softmax
     if pred.min() < 0:
@@ -73,7 +86,7 @@ def make_inference(
 
     pred_np = pred.squeeze().detach().cpu().numpy()  # [17]
     pred_dict = {Flowers17._classes[i]: pred_np[i] for i in range(len(pred_np))}
-    return pred_dict
+    return pred_dict, masked_img
 
 
 def model_analyze(model: Classifier):
@@ -133,12 +146,18 @@ with gr.Blocks("COMP3340 Group Project Demo") as demo:
                     inputs=[test_loader],
                     outputs=[data, sample, sample_class],
                 )
+                visualize_attn = gr.Checkbox(label="Visualize Attention", value=False)
             with gr.Column():
                 pred = gr.Label(
                     label="Predictions",
                 )
+            with gr.Column():
+                attn = gr.Image(interactive=False, label="Attention")
+
         inference_btn = gr.Button("Inference", size="sm")
-        inference_btn.click(make_inference, inputs=[model, data], outputs=[pred])
+        inference_btn.click(
+            make_inference, inputs=[model, data, visualize_attn], outputs=[pred, attn]
+        )
     with gr.Tab("Dataset"):
         loader = gr.Dropdown(
             label="Dataset",
@@ -172,6 +191,13 @@ with gr.Blocks("COMP3340 Group Project Demo") as demo:
         )
         with gr.Row():
             load_btn = gr.Button("Load", size="sm")
+
+            refresh_btn = gr.Button(
+                "Refresh",
+                size="sm",
+                every=5,
+            )
+            refresh_btn.click(refresh_checkpoints)
         model_config_viewer = gr.Code(
             label="Model Configuration",
             language="yaml",
