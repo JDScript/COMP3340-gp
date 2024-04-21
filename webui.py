@@ -7,7 +7,11 @@ import torch.utils
 import torch.utils.data
 from config import Config
 from models.classifier import Classifier
-from fvcore.nn import FlopCountAnalysis
+from fvcore.nn import (
+    FlopCountAnalysis,
+    flop_count_table,
+)
+from utils import visualize_attention
 from datasets import instentiate_dataloader, Flowers17
 from torchvision.utils import make_grid
 import torchvision.transforms.functional as TF
@@ -28,7 +32,7 @@ device = torch.device(
 
 def refresh_checkpoints():
     global checkpoints
-    checkpoints = [str(log) for log in log_path.glob("version_*/checkpoints/*.ckpt")]
+    checkpoints = [str(log) for log in log_path.glob("*/checkpoints/*.ckpt")]
 
 
 def load_model(ckpt_path: str):
@@ -52,11 +56,14 @@ def sample_from_dataloader(test_loader: torch.utils.data.DataLoader):
     )
 
 
-def make_inference(model: Classifier, data: tuple[torch.Tensor, np.ndarray]):
+def make_inference(
+    model: Classifier,
+    data: tuple[torch.Tensor, np.ndarray],
+):
     gr.Info("Inference using {}".format(device))
     model.eval()
     model.to(device)
-    X, y = data
+    X, _ = data
     X = X.unsqueeze(0).to(device)
     pred: torch.Tensor = model(X)
 
@@ -67,6 +74,11 @@ def make_inference(model: Classifier, data: tuple[torch.Tensor, np.ndarray]):
     pred_np = pred.squeeze().detach().cpu().numpy()  # [17]
     pred_dict = {Flowers17._classes[i]: pred_np[i] for i in range(len(pred_np))}
     return pred_dict
+
+
+def model_analyze(model: Classifier):
+    flops = FlopCountAnalysis(model, torch.rand((1, 3, 224, 224)))
+    return str(model.model), flop_count_table(flops)
 
 
 def show_from_dataloader(
@@ -143,7 +155,16 @@ with gr.Blocks("COMP3340 Group Project Demo") as demo:
             inputs=[loader, train_loader, val_loader, test_loader],
             outputs=[sample_images],
         )
-
+    with gr.Tab("Flops and Params Analysis"):
+        analysis_btn = gr.Button("Analyze", size="sm")
+        with gr.Row():
+            model_structure = gr.Code(label="Model Structure")
+            flops_and_params = gr.Code(label="Flops and Params")
+        analysis_btn.click(
+            model_analyze,
+            inputs=[model],
+            outputs=[model_structure, flops_and_params],
+        )
     with gr.Tab("Settings"):
         checkpoint = gr.Dropdown(
             label="Model Checkpoint",
@@ -151,13 +172,6 @@ with gr.Blocks("COMP3340 Group Project Demo") as demo:
         )
         with gr.Row():
             load_btn = gr.Button("Load", size="sm")
-
-            refresh_btn = gr.Button(
-                "Refresh",
-                size="sm",
-                every=5,
-            )
-            refresh_btn.click(refresh_checkpoints)
         model_config_viewer = gr.Code(
             label="Model Configuration",
             language="yaml",
