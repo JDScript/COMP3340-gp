@@ -1,6 +1,7 @@
 # COMP3340 Group Project - Image Classifier on Flowers17
 This is the repository for the group project of COMP3340 Applied Machine Learning @ HKU.
 ## Environment Setup
+This setup can directly be used on macOS (mps) or Linux (CUDA 12.0). If you need to run using the lower version of cuda, please check on the [PyTorch website](https://pytorch.org/get-started/locally/) to install the corresponding version of PyTorch (--index-url https://download.pytorch.org/whl/cu118 for CUDA 11.8).
 ```
 conda create -n comp3340gp python=3.11
 conda activate comp3340gp
