@@ -5,3 +5,4 @@ __pycache__/
 pretrain_weights/*
 !pretrain_weights/.gitkeep
 ckpt/
+.DS_Store
