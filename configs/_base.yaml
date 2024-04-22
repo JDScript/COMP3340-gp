@@ -61,6 +61,6 @@ trainer:
   scheduler:
     target: torch.optim.lr_scheduler.MultiStepLR
     params:
-      gamma: 0.001
+      gamma: 0.1
       # step_size: 50
       milestones: [100, 150]
